@@ -113,7 +113,7 @@ public class LevelManager : MonoBehaviour, ISaveable
         
         uiScore.SetScore(score.ToString());
         uiHealthBar.SetLives(player.lives.ToString());
-        //uiBeltInventory.SetAmmo(player.gunning.initial_Ammo.ToString());
+        uiBeltInventory.SetAmmo(player.gunning.initial_Ammo.ToString());
     }
     private void Update()
     {
@@ -285,6 +285,7 @@ public class LevelManager : MonoBehaviour, ISaveable
         var p = PlayerPrefab.GetComponent<PlayerController>();
         p.lives = lastLives;
         p.healthPoints = p.maxHealthPoints; //Reset health points
+        p.Stamina = p.MaxStamina;
         uiHealthBar.SetUIHealth(p.healthPoints, p.maxHealthPoints);
 
         p.gunning.rocketsAmmo = lastRocketsAmmo;

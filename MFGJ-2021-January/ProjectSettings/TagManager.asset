@@ -35,8 +35,6 @@ TagManager:
   - ExplosivesAmmo
   - Tank
   - Trap
-<<<<<<< HEAD
-=======
   - TrapAnimation
   - playerWeaponImage
   - Mushrooms
@@ -45,7 +43,18 @@ TagManager:
   - Wood
   - WoodInsideRoom
   - ReverbON
->>>>>>> main
+  - UI_Wirecutter
+  - ExitHut_A
+  - HealHutLoot
+  - GunHutLoot
+  - Puzzle_GreenDoor
+  - DeployedBomb
+  - Puzzle_GreenDoors
+  - Puzzle_BlueDoors
+  - Puzzle_BlueDoor
+  - Puzzle_RedDoors
+  - Puzzle_RedDoor
+  - ReverbZone
   layers:
   - Default
   - TransparentFX

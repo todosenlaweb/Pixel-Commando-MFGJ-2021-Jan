@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour, ISaveable, IGunnig
+public class PlayerController : MonoBehaviour, ISaveable
 {
     #region Variables
     LevelManager levelManager;
@@ -57,9 +57,9 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
 
     public float trapTickDuration = 0.5f;
     private float trapEnterTime;
-    [SerializeField] private ShootingAndToEquipGuns shootingAndGunsEquips;
-    private Transform shotPoint;
+    private CoroutineAux coroutineAux;
     public float MaxStamina { get => maxStamina; }
+    public float Stamina { get => stamina; set => stamina = value; }
 
     #endregion
 
@@ -72,15 +72,15 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
         uiStamina = FindObjectOfType<UI_Stamina>();
         audioManager = GameObject.Find("AudioManager").GetComponent<AudioManager>();
         hitAnimation = GetComponent<Animation>();
-        shootingAndGunsEquips.Configuration(this);
+        coroutineAux = FindObjectOfType<CoroutineAux>();
     }
     // Start is called before the first frame update
     void Start()
     {
-        healthPoints = maxHealthPoints;
+        stamina = maxStamina;
+        healthPoints = maxHealthPoints;      
         healthBar.SetHealth(healthPoints, maxHealthPoints);
         borderFlasher = FindObjectOfType<BorderFlasher>();
-        shotPoint = currentGun.transform;
     }
     // Update is called once per frame
     void Update()
@@ -172,6 +172,24 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
                 }
                 trapEnterTime = Time.time;
                 break;
+            case "HealHutLoot":
+                healthPoints += collision.GetComponent<Healing>().amount;
+                if (healthPoints >= maxHealthPoints) { healthPoints = maxHealthPoints; }
+                healthBar.SetHealth(healthPoints, maxHealthPoints);
+
+                coroutineAux.HideObject(20, collision.gameObject);
+
+                audioManager.PlayHealingSound("Heal");
+                borderFlasher.FlashBorder("heal");
+                break;
+            case "GunHutLoot":
+                coroutineAux.HideObject(30, collision.gameObject);
+
+                GunSwap(collision.GetComponent<Healing>().prefab, currentGun);
+                uiBeltInventory.SetPrimaryWeaponImage(collision.GetComponent<SpriteRenderer>().sprite);
+                uiBeltInventory.TriggerPickupAnimation(collision.gameObject);
+                audioManager.PlaySound("PickUpWeapon");
+                break;
             default:
                 break;
         }
@@ -218,9 +236,6 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
         Destroy(oldGun.gameObject);
         currentGun = Instantiate(newGun, position, rotation) as GameObject; 
         currentGun.transform.parent = this.transform;
-        //this.GetComponentInChildren<Gunning>().shotPoint = currentGun.transform;
-        shotPoint = currentGun.transform;
-
         gunning = FindObjectOfType<Gunning>();
         gunning.rocketsAmmo = levelManager.lastRocketsAmmo;
         gunning.javelinAmmo = levelManager.lastJavelinAmmo;
@@ -244,7 +259,7 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
         levelManager.lastSelectedSpecial = gunning.selectedSpecial;
 
         this.gameObject.SetActive(false);
-        healthBar.SetHealth(100, 100); // this line is needed to update the healthbar UI when respawn.
+        healthBar.SetHealth(healthPoints, maxHealthPoints); // this line is needed to update the healthbar UI when respawn.
 
         deadPlayerRef = Instantiate(deathPrefab, this.transform.position, this.transform.rotation);
         deadPlayerRef.tag = "Untagged"; //To keep enemies from detecting deadPlayer like as player
@@ -300,6 +315,7 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
         staminaSlider.minValue = 0;
         staminaSlider.value = stamina;
         //color.GetComponent<Image>().color = Color.Lerp(lowColor, highColor, staminaSlider.normalizedValue); why doesnt works?
+        
         uiStamina.SetUIStamina(stamina, maxStamina);
 
         if (staminaSlider.value >= staminaSlider.maxValue )
@@ -331,19 +347,4 @@ public class PlayerController : MonoBehaviour, ISaveable, IGunnig
         transform.position = a_SaveData.m_PlayerData.p_position;
     }
     #endregion
-
-    public ShootingAndToEquipGuns GetGunsAndEquips()
-    {
-        return shootingAndGunsEquips;
-    }
-
-    public string GetFirstGun()
-    {
-        return "pistol";
-    }
-
-    public GameObject GetShootPoint()
-    {
-        return shotPoint.gameObject;
-    }
 }

@@ -7,6 +7,7 @@ public class Gunning : MonoBehaviour, ISaveable
     #region Variables
     LevelManager levelManager;
     UI_BeltInventory uiBeltInventory;
+    private Camera mainCam;
     public float offset;
 
     public GameObject bulletPrefab;
@@ -57,17 +58,18 @@ public class Gunning : MonoBehaviour, ISaveable
         rocketsUI = levelManager.rocketsUI;
         playerController = FindObjectOfType<PlayerController>();
         uiBeltInventory = FindObjectOfType<UI_BeltInventory>();
+        mainCam = Camera.main;
     }
     void Update()
     {
         if (!levelManager.IsGameOver && Time.timeScale != 0)
         {
-            Vector3 difference = Camera.main.ScreenToWorldPoint(Input.mousePosition) - weaponPrefabTransform.position;
+            Vector3 difference = mainCam.ScreenToWorldPoint(Input.mousePosition) - weaponPrefabTransform.position;
             float rotZ = Mathf.Atan2(difference.y, difference.x) * Mathf.Rad2Deg;
             UpdateWeaponRotation();
             weaponPrefabTransform.rotation = Quaternion.Euler(0f, 0f, rotZ + offset);
 
-            //LeftClickListener();
+            LeftClickListener();
             RightClickListener();
 
             if (Input.GetKeyDown(KeyCode.Tab) || Input.GetAxis("Mouse ScrollWheel") != 0)
@@ -273,13 +275,4 @@ public class Gunning : MonoBehaviour, ISaveable
     }
     #endregion
 
-    public string GetFirstGun()
-    {
-        return "pistol";
-    }
-
-    public GameObject GetShootPoint()
-    {
-        return shotPoint.gameObject;
-    }
 }
